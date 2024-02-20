@@ -1,6 +1,8 @@
 "use client";
 
 import * as z from "zod";
+import axios from "axios";
+
 import { MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,8 +12,17 @@ import { formSchema } from "./constants";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { CreateChatCompletionRequestMessage } from "openai/resources/index.mjs";
 
 const ConversationPage = () => {
+  const router = useRouter();
+  const [messages, setMessages] = useState<
+    CreateChatCompletionRequestMessage[]
+  >([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -20,11 +31,62 @@ const ConversationPage = () => {
   });
 
   const isLoading = form.formState.isSubmitting;
-  console.log(isLoading);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      const userMessage = {
+        role: "user",
+        content: values.prompt,
+      };
+      const newMessages = [...messages, userMessage];
+
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-3.5-turbo",
+          messages: newMessages,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+          },
+        }
+      );
+
+      console.log(response, "response");
+      setMessages((current) => [
+        ...current,
+        userMessage,
+        response.data.choices[0].message,
+      ]);
+
+      form.reset();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      router.refresh();
+    }
   };
+
+  // TODO: implement with route.js
+  // const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  //   try {
+  //     const userMessage = {
+  //       role: "user",
+  //       content: values.prompt,
+  //     };
+  //     const newMessages = [...messages, userMessage];
+
+  //     const response = await axios.post("/api/conversation", {
+  //       messages: newMessages,
+  //     });
+  //     form.reset();
+  //   } catch (error) {
+  //     console.log("error", error);
+  //   } finally {
+  //     router.refresh();
+  //   }
+  // };
 
   return (
     <div>
@@ -79,6 +141,21 @@ const ConversationPage = () => {
               </Button>
             </form>
           </Form>
+          <div className="flex flex-col-reverse gap-y-4">
+            {messages.map((message, index) => (
+              <div
+                key={`message.content ${index}`}
+                className={cn(
+                  "p-8 w-full flex items-start gap-x-8 rounded-lg",
+                  message.role === "user"
+                    ? "bg-white border border-black/10"
+                    : "bg-muted"
+                )}
+              >
+                <p className="text-sm">{message.content}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
