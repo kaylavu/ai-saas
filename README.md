@@ -20,6 +20,11 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Chat with CHAT-GPT 3.5
+
+https://github.com/kaylavu/ai-sass/assets/38767129/737937b3-0f48-449f-90e9-b6d956a8ed93
+
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
