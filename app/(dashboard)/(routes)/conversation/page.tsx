@@ -15,13 +15,15 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CreateChatCompletionRequestMessage } from "openai/resources/index.mjs";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
 
 const ConversationPage = () => {
   const router = useRouter();
-  const [messages, setMessages] = useState<
-    CreateChatCompletionRequestMessage[]
-  >([]);
+  const [messages, setMessages] = useState<Array<Message>>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,26 +42,10 @@ const ConversationPage = () => {
       };
       const newMessages = [...messages, userMessage];
 
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-3.5-turbo",
-          messages: newMessages,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-          },
-        }
-      );
-
-      console.log(response, "response");
-      setMessages((current) => [
-        ...current,
-        userMessage,
-        response.data.choices[0].message,
-      ]);
-
+      const response = await axios.post("/api/chat", {
+        messages: newMessages,
+      });
+      setMessages((current) => [...current, userMessage, response.data]);
       form.reset();
     } catch (error) {
       console.log(error);
@@ -67,26 +53,6 @@ const ConversationPage = () => {
       router.refresh();
     }
   };
-
-  // TODO: implement with route.js
-  // const onSubmit = async (values: z.infer<typeof formSchema>) => {
-  //   try {
-  //     const userMessage = {
-  //       role: "user",
-  //       content: values.prompt,
-  //     };
-  //     const newMessages = [...messages, userMessage];
-
-  //     const response = await axios.post("/api/conversation", {
-  //       messages: newMessages,
-  //     });
-  //     form.reset();
-  //   } catch (error) {
-  //     console.log("error", error);
-  //   } finally {
-  //     router.refresh();
-  //   }
-  // };
 
   return (
     <div>
@@ -124,7 +90,7 @@ const ConversationPage = () => {
                       <Input
                         className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                         disabled={isLoading}
-                        placeholder="How do I calculate the radius of a circle?"
+                        placeholder="Hello there! Let's chat."
                         {...field}
                       />
                     </FormControl>
