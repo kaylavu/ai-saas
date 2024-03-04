@@ -23,6 +23,14 @@ export async function POST(req: Request) {
     const chatCompletion: OpenAI.Chat.ChatCompletion =
       await openai.chat.completions.create(params);
     return NextResponse.json(chatCompletion.choices[0].message);
+
+    // For development purposes, stubbing response to save on API Requests costs.
+    // const chatCompletion = {
+    //   choices: [
+    //     { message: { content: "hello, stubbed for now", role: "assistant" } },
+    //   ],
+    // };
+    // return NextResponse.json(chatCompletion.choices[0].message);
   } catch (error) {
     console.log("[CONVERSATION_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });

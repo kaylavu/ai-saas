@@ -15,6 +15,10 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Empty } from "@/components/empty";
+import { Loader } from "@/components/loader";
+import { UserAvatar } from "@/components/user-avatar";
+import { BotAvatar } from "@/components/bot-avatar";
 
 interface Message {
   role: "user" | "assistant";
@@ -42,12 +46,13 @@ const ConversationPage = () => {
       };
       const newMessages = [...messages, userMessage];
 
-      const response = await axios.post("/api/chat", {
+      const response = await axios.post("/api/conversation", {
         messages: newMessages,
       });
       setMessages((current) => [...current, userMessage, response.data]);
       form.reset();
     } catch (error) {
+      // TODO: Open Pro Modal
       console.log(error);
     } finally {
       router.refresh();
@@ -107,6 +112,12 @@ const ConversationPage = () => {
               </Button>
             </form>
           </Form>
+          <div className="space-y-4 mt-4">{isLoading && <Loader />}</div>
+          <div className="space-y-4 mt-4">
+            {messages.length === 0 && !isLoading && (
+              <Empty label="No conversation started." />
+            )}
+          </div>
           <div className="flex flex-col-reverse gap-y-4">
             {messages.map((message, index) => (
               <div
@@ -118,6 +129,7 @@ const ConversationPage = () => {
                     : "bg-muted"
                 )}
               >
+                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
                 <p className="text-sm">{message.content}</p>
               </div>
             ))}
