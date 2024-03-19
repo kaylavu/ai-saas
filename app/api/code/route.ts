@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs";
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { checkApiLimit, incrementApiLimit } from "@/lib/api-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,30 +16,24 @@ export async function POST(req: Request) {
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    // const instructionMessage = {
-    //   role: "system",
-    //   content:
-    //     "You are a code generator. You must answer only in markdown code snippets. Use code comments for explanations.",
-    // };
-    // const params: OpenAI.Chat.ChatCompletionCreateParams = {
-    //   messages: [instructionMessage, ...messages],
-    //   model: "gpt-3.5-turbo",
-    // };
-    // const chatCompletion: OpenAI.Chat.ChatCompletion =
-    //   await openai.chat.completions.create(params);
-    // return NextResponse.json(chatCompletion.choices[0].message);
-
-    // For development purposes, stubbing response to save on API Requests costs.
-    const chatCompletion = {
-      choices: [
-        {
-          message: {
-            role: "assistant",
-            content: "```markdown\n<!-- Hi there! -->\n```",
-          },
-        },
-      ],
+    const freeTrial = await checkApiLimit();
+    if (!freeTrial) {
+      return new NextResponse("Free trial has expired.", { status: 403 });
+    }
+    const instructionMessage = {
+      role: "system",
+      content:
+        "You are a code generator. You must answer only in markdown code snippets. Use code comments for explanations.",
     };
+    const params: OpenAI.Chat.ChatCompletionCreateParams = {
+      messages: [instructionMessage, ...messages],
+      model: "gpt-3.5-turbo",
+    };
+    const chatCompletion: OpenAI.Chat.ChatCompletion =
+      await openai.chat.completions.create(params);
+
+    await incrementApiLimit();
+
     return NextResponse.json(chatCompletion.choices[0].message);
   } catch (error) {
     console.log("[CODE_ERROR]", error);

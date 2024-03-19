@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs";
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,6 +16,11 @@ export async function POST(req: Request) {
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+    const freeTrial = await checkApiLimit();
+
+    if (!freeTrial) {
+      return new NextResponse("Free trial has expired.", { status: 403 });
+    }
 
     const params: OpenAI.Chat.ChatCompletionCreateParams = {
       messages: messages,
@@ -22,15 +28,10 @@ export async function POST(req: Request) {
     };
     const chatCompletion: OpenAI.Chat.ChatCompletion =
       await openai.chat.completions.create(params);
-    return NextResponse.json(chatCompletion.choices[0].message);
 
-    // For development purposes, stubbing response to save on API Requests costs.
-    // const chatCompletion = {
-    //   choices: [
-    //     { message: { content: "hello, stubbed for now", role: "assistant" } },
-    //   ],
-    // };
-    // return NextResponse.json(chatCompletion.choices[0].message);
+    await incrementApiLimit();
+
+    return NextResponse.json(chatCompletion.choices[0].message);
   } catch (error) {
     console.log("[CONVERSATION_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });
