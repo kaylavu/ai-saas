@@ -2,27 +2,25 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 Step 1. Copy the .env.example and rename to .env
-To set up your environment variables, you will need to sign up for the following accounts : 
+
+To set up your environment variables, you will need to sign up for the following services and obtain API keys: 
 - [Clerk](https://clerk.com/) for authentication and user management, and 
 - [OpenAI API](https://openai.com/)
 
-Step 2. Sign up for a [Clerk Account](https://clerk.com/) for authentication and user management. 
 
-Step 3. Sign up for an OpenAI account. 
-
-Step 1. Install required dependencies. 
+Step 2. Install required dependencies. 
 ```
 npm i
 ```
 
-Step 2. Run the development server:
+Step 3. Run the development server:
 ```
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Step 3. Create an account and log in. Authentication is handled using Clerk API. 
+Step 4. Create an account and log in. 
 
 ## Demo: Chat with CHAT-GPT 3.5
 
