@@ -21,6 +21,7 @@ import { Loader } from "@/components/loader";
 import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 import Markdown from "react-markdown";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 interface Message {
   role: "user" | "assistant";
@@ -30,6 +31,7 @@ interface Message {
 const CodePage = () => {
   const router = useRouter();
   const [messages, setMessages] = useState<Array<Message>>([]);
+  const proModal = useProModal();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,8 +55,10 @@ const CodePage = () => {
       });
       setMessages((current) => [...current, userMessage, response.data]);
       form.reset();
-    } catch (error) {
-      // TODO: Open Pro Modal
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
       console.log(error);
     } finally {
       router.refresh();

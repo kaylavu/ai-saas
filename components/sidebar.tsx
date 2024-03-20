@@ -1,5 +1,6 @@
 "use client";
 
+import { FreeCounter } from "@/components/free-counter";
 import { cn } from "@/lib/utils";
 import {
   Code,
@@ -60,7 +61,12 @@ const routes = [
     href: "/settings",
   },
 ];
-export default function Sidebar() {
+
+interface SidebarProps {
+  apiLimitCount: number;
+}
+
+export default function Sidebar({ apiLimitCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-[#111827] text-white">
@@ -93,6 +99,7 @@ export default function Sidebar() {
           ))}
         </div>
       </div>
+      <FreeCounter apiLimitCount={apiLimitCount} />
     </div>
   );
 }
