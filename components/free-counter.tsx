@@ -10,9 +10,10 @@ import { useEffect, useState } from "react";
 
 interface FreeCounterProps {
   apiLimitCount: number;
+  isPro: boolean;
 }
 
-export const FreeCounter = ({ apiLimitCount }: FreeCounterProps) => {
+export const FreeCounter = ({ apiLimitCount, isPro }: FreeCounterProps) => {
   const [mounted, setMounted] = useState(false);
   const proModal = useProModal();
 
@@ -21,6 +22,10 @@ export const FreeCounter = ({ apiLimitCount }: FreeCounterProps) => {
   }, []);
 
   if (!mounted) {
+    return null;
+  }
+
+  if (isPro) {
     return null;
   }
 
