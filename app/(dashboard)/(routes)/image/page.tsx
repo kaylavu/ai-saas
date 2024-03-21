@@ -27,6 +27,7 @@ import {
 import { Card, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
 import { useProModal } from "@/hooks/use-pro-modal";
+import toast from "react-hot-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -52,15 +53,15 @@ const ImagePage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post("/api/images", values);
-      console.log("response", response);
       const urls = response.data.map((image: { url: string }) => image.url);
       setImages(urls);
       form.reset();
     } catch (error: any) {
       if (error?.response?.status === 403) {
         proModal.onOpen();
+      } else {
+        toast.error("Failed to generate image.");
       }
-      console.log(error);
     } finally {
       router.refresh();
     }

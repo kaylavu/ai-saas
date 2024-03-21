@@ -17,6 +17,7 @@ import { useProModal } from "@/hooks/use-pro-modal";
 import { cn } from "@/lib/utils";
 import { Check, Zap } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export const ProModal = () => {
   const proModal = useProModal();
@@ -28,6 +29,7 @@ export const ProModal = () => {
       const response = await axios.get("/api/stripe");
       window.location.href = response.data.url;
     } catch (error) {
+      toast.error("Failed to subscribe. Please try again later.");
     } finally {
       setLoading(false);
     }
